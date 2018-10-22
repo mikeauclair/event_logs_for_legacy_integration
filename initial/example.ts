@@ -1,23 +1,4 @@
-type Person = {
-  id: number,
-  age: number,
-  years_licensed: number,
-  name: string,
-  ssn: string
-}
-
-type Vehicle = {
-  id: number,
-  make: string,
-  model: string,
-  year: number,
-  vin: string
-}
-
-type LegacyInput = {
-  people: Person[],
-  vehicles: Vehicle[]
-}
+import {Person, Vehicle, LegacyInput, Exclusion, Group, Output} from '../shared/edge_types'
 
 let legacy_input: LegacyInput = {
   people: [
@@ -80,23 +61,6 @@ let events: event[] = [
   ["set", "vehicleGroupAssignment", 1, 2],
   ["remove", "exclusion", 1, 2]
 ];
-
-type Exclusion = {
-  driver_id: number,
-  vehicle_id: number
-}
-
-type Group = {
-  id: number
-  vehicles: Vehicle[]
-  drivers: Person[]
-  limit?: number
-}
-
-type Output = {
-  groups: Group[]
-  exclusions: Exclusion[]
-}
 
 let output: Output = {
   groups: [],
