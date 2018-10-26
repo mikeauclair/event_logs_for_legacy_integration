@@ -1,7 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es2015",
+    "target": "es6",
     "noImplicitAny": true,
-    "outDir": "dist/"
+    "outDir": "dist",
+    "baseUrl": ".",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "sourceMap": true
   }
 }

@@ -43,7 +43,7 @@ let handleSet = (e: event) => {
         id: e[EventIndex.Target],
         vehicles: [],
         drivers: e[EventIndex.Value].map((pid: number) => {
-          legacyInput.people.find(p => p.id === pid);
+          return legacyInput.people.find(p => p.id === pid);
         })
       });
       break;
