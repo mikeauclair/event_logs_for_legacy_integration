@@ -1,6 +1,8 @@
 import {Person, Vehicle, LegacyInput, Exclusion, Group, Output} from '../../shared/edge_types'
 
 import {payload as legacyInputInitial} from '../../shared/legacy_input_payloads/initial.js';
+import {payload as legacyInputMissingPersonOne} from '../../shared/legacy_input_payloads/missing_person_one.js';
+import {payload as legacyInputMissingPersonOneAndTwo} from '../../shared/legacy_input_payloads/missing_person_one_and_two.js';
 
 type Command = "set" | "remove" | "noop";
 type TargetType = 'exclusion' | 'group' | 'groupLimit' | 'vehicleGroupAssignment' | "none";
@@ -152,23 +154,47 @@ function handleInput(input: LegacyInput) {
     groups: [],
     exclusions: []
   };
+  let response: HandlerResponse;
 
-  events.forEach(e => {
+  let messages: Message[] = [];
+  
+  let newEvents = events.map(e => {
     switch (e[EventIndex.Command]) {
       case "set":
-        output = handleSet(input, e, output).output;
+        response = handleSet(input, e, output);
         break;
       case "remove":
-        output = handleRemove(input, e, output).output;
+        response = handleRemove(input, e, output);
         break;
       case "noop":
-        break;
+        response = {output: output, event: noopFor(e)};
+        break
       default:
         throw "Invalid command: " + e[EventIndex.Command]
     }
+    output = response.output;
+    if (response.message){
+      if (response.message.level === "ERROR"){
+        let err: any = new Error("Log Replay Error");
+        err.replayMessage = response.message;
+        throw err;
+      }
+      messages.push(response.message);
+    }
+    return response.event;
   });
 
   console.log(JSON.stringify(output));
+  console.log(JSON.stringify(messages));
+  console.log(JSON.stringify(newEvents));
+  console.log("\n");
 }
 
-handleInput(legacyInputInitial);
+try {
+  handleInput(legacyInputInitial);
+  handleInput(legacyInputMissingPersonOne);
+  handleInput(legacyInputMissingPersonOneAndTwo);
+} catch(e) {
+  console.log(e.message);
+  console.log(JSON.stringify(e.replayMessage));
+}
