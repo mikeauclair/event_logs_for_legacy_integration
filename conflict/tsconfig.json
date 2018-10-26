@@ -3,9 +3,13 @@
     "target": "es6",
     "noImplicitAny": true,
     "outDir": "dist",
-    "baseUrl": ".",
+    "strictNullChecks": true,
+    "baseUrl": "./src",
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true
-  }
+  },
+  "include": [
+    "src/**/*"
+  ]
 }
