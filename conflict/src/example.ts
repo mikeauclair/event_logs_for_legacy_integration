@@ -43,6 +43,11 @@ enum EventIndex {
 
 type event = [Command, TargetType, Target, Value];
 
+interface DriverLookupResult {
+  found: Person[];
+  missing: number[];
+}
+
 let events: event[] = [
   ["set", "exclusion", 1, 2],
   ["set", "group", 1, [1, 2]],
@@ -55,21 +60,16 @@ let events: event[] = [
 ];
 
 // Force exhaustiveness checking via the `never` type
-function assertNever(x: never, label: string): never {
+const assertNever = (x: never, label: string): never => {
   throw new Error("Unexpected " + label + ": " + x);
-}
+};
 
-let noopFor = (e: event) => {
+const noopFor = (e: event) => {
   let output: event = ["noop", "none", 0, e];
   return output;
 };
 
-interface DriverLookupResult {
-  found: Person[];
-  missing: number[];
-}
-
-let handleSet = (
+const handleSet = (
   legacyInput: LegacyInput,
   e: event,
   output: Output
@@ -83,13 +83,13 @@ let handleSet = (
       );
       if (!driver || !vehicle) {
         return {
-          output: output,
+          output,
           event: noopFor(e),
           message: { level: "NOTIFY", content: "Exclusion Removed" }
         };
       }
       output.exclusions.push({ driver_id: driver.id, vehicle_id: vehicle.id });
-      return { output: output, event: e };
+      return { output, event: e };
     case "group":
       let drivers = e[EventIndex.Value].reduce(
         (accum: DriverLookupResult, pid: number) => {
@@ -117,7 +117,7 @@ let handleSet = (
             drivers.found.map((d: any) => d.id)
           ];
           return {
-            output: output,
+            output,
             event: newEvent,
             message: {
               level: "WARN",
@@ -125,11 +125,11 @@ let handleSet = (
             }
           };
         } else {
-          return { output: output, event: e };
+          return { output, event: e };
         }
       } else {
         return {
-          output: output,
+          output,
           event: noopFor(e),
           message: {
             level: "WARN",
@@ -143,10 +143,10 @@ let handleSet = (
       var group = output.groups.find(g => g.id === e[EventIndex.Target]);
       if (group) {
         group.limit = e[EventIndex.Value];
-        return { output: output, event: e };
+        return { output, event: e };
       } else {
         return {
-          output: output,
+          output,
           event: noopFor(e),
           message: { level: "NOTIFY", content: "Limit removed" }
         };
@@ -160,17 +160,17 @@ let handleSet = (
         );
         if (vehicle) {
           group.vehicles.push(vehicle);
-          return { output: output, event: e };
+          return { output, event: e };
         } else {
           return {
-            output: output,
+            output,
             event: noopFor(e),
             message: { level: "WARN", content: "Vehicle has been removed" }
           };
         }
       } else {
         return {
-          output: output,
+          output,
           event: noopFor(e),
           message: {
             level: "ERROR",
@@ -185,10 +185,10 @@ let handleSet = (
     default:
       assertNever(eventType, "parameter");
   }
-  return { output: output, event: e };
+  return { output, event: e };
 };
 
-let handleRemove = (
+const handleRemove = (
   legacyInput: LegacyInput,
   e: event,
   output: Output
@@ -202,7 +202,7 @@ let handleRemove = (
       );
       if (!driver || !vehicle) {
         return {
-          output: output,
+          output,
           event: noopFor(e),
           message: { level: "NOTIFY", content: "Exclusion Not Removed" }
         };
@@ -210,7 +210,7 @@ let handleRemove = (
       output.exclusions = output.exclusions.filter(r => {
         r.driver_id !== driver!.id || r.vehicle_id !== vehicle!.id;
       });
-      return { output: output, event: e };
+      return { output, event: e };
       break;
     case "group":
     case "groupLimit":
@@ -222,10 +222,10 @@ let handleRemove = (
     default:
       assertNever(eventType, "parameter");
   }
-  return { output: output, event: e };
+  return { output, event: e };
 };
 
-function handleInput(input: LegacyInput) {
+const handleInput = (input: LegacyInput) => {
   let output: Output = {
     groups: [],
     exclusions: []
@@ -243,7 +243,7 @@ function handleInput(input: LegacyInput) {
         response = handleRemove(input, e, output);
         break;
       case "noop":
-        response = { output: output, event: noopFor(e) };
+        response = { output, event: noopFor(e) };
         break;
       default:
         throw "Invalid command: " + e[EventIndex.Command];
@@ -264,7 +264,7 @@ function handleInput(input: LegacyInput) {
   console.log(JSON.stringify(messages));
   console.log(JSON.stringify(newEvents));
   console.log("\n");
-}
+};
 
 try {
   handleInput(legacyInputInitial);
