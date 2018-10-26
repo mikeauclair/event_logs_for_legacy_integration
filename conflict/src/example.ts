@@ -48,6 +48,7 @@ interface DriverLookupResult {
   missing: number[];
 }
 
+// Use tuples for serialization compactness
 let events: event[] = [
   ["set", "exclusion", 1, 2],
   ["set", "group", 1, [1, 2]],
@@ -64,10 +65,22 @@ const assertNever = (x: never, label: string): never => {
   throw new Error("Unexpected " + label + ": " + x);
 };
 
+// noop events should contain the operation they replaced in the value for debugging purposes
 const noopFor = (e: event) => {
   let output: event = ["noop", "none", 0, e];
   return output;
 };
+
+interface IDable {
+  id: number;
+}
+
+function findByID<T extends IDable>(
+  collection: T[],
+  id: number
+): T | undefined {
+  return collection.find(c => c.id === id);
+}
 
 const handleSet = (
   legacyInput: LegacyInput,
@@ -77,10 +90,8 @@ const handleSet = (
   let eventType = e[EventIndex.Type];
   switch (eventType) {
     case "exclusion":
-      let driver = legacyInput.people.find(p => p.id === e[EventIndex.Target]);
-      let vehicle = legacyInput.vehicles.find(
-        v => v.id === e[EventIndex.Value]
-      );
+      let driver = findByID(legacyInput.people, e[EventIndex.Target]);
+      let vehicle = findByID(legacyInput.vehicles, e[EventIndex.Value]);
       if (!driver || !vehicle) {
         return {
           output,
@@ -93,7 +104,7 @@ const handleSet = (
     case "group":
       let drivers = e[EventIndex.Value].reduce(
         (accum: DriverLookupResult, pid: number) => {
-          let driver = legacyInput.people.find(p => p.id === pid);
+          let driver = findByID(legacyInput.people, pid);
           if (driver) {
             accum.found.push(driver);
           } else {
@@ -140,7 +151,7 @@ const handleSet = (
       }
       break;
     case "groupLimit":
-      var group = output.groups.find(g => g.id === e[EventIndex.Target]);
+      var group = findByID(output.groups, e[EventIndex.Target]);
       if (group) {
         group.limit = e[EventIndex.Value];
         return { output, event: e };
@@ -153,11 +164,9 @@ const handleSet = (
       }
       break;
     case "vehicleGroupAssignment":
-      var group = output.groups.find(g => g.id === e[EventIndex.Target]);
+      var group = findByID(output.groups, e[EventIndex.Target]);
       if (group) {
-        let vehicle = legacyInput.vehicles.find(
-          v => v.id === e[EventIndex.Value]
-        );
+        let vehicle = findByID(legacyInput.vehicles, e[EventIndex.Value]);
         if (vehicle) {
           group.vehicles.push(vehicle);
           return { output, event: e };
@@ -196,10 +205,8 @@ const handleRemove = (
   let eventType = e[EventIndex.Type];
   switch (eventType) {
     case "exclusion":
-      let driver = legacyInput.people.find(p => p.id === e[EventIndex.Target]);
-      let vehicle = legacyInput.vehicles.find(
-        v => v.id === e[EventIndex.Value]
-      );
+      let driver = findByID(legacyInput.people, e[EventIndex.Target]);
+      let vehicle = findByID(legacyInput.vehicles, e[EventIndex.Value]);
       if (!driver || !vehicle) {
         return {
           output,
