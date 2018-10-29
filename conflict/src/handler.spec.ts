@@ -161,7 +161,8 @@ describe("original events", () => {
       ["noop", 0, ["setGroup", 1, [1, 2]]],
       ["setGroup", 2, [3]],
       ["noop", 0, ["setGroupLimit", 1, 30000]],
-      ["setGroupLimit", 2, 50000]
+      ["setGroupLimit", 2, 50000],
+      ["noop", 0, ["setVehicleGroupAssignment", 1, 1]]
     ]);
 
     expect(response.messages).to.deep.equal([

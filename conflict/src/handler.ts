@@ -184,6 +184,7 @@ export const handleInput = (
   for (var event of events) {
     response = handleCommand(input, event, output);
     output = response.output;
+    newEvents.push(response.event);
     if (response.message) {
       if (response.message.level === "ERROR") {
         // We don't want to drown the user in messages, so we swap out all but the last message
@@ -192,7 +193,6 @@ export const handleInput = (
       }
       messages.push(response.message);
     }
-    newEvents.push(response.event);
   }
   return { output, messages, events: newEvents };
 };
