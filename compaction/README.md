@@ -1,6 +1,6 @@
-# Applying event logs with lenses
+# Compacting event logs
 
-Example code for this post https://blog.mikeauclair.com/blog/2018/10/31/event-logs-distraction-lenses.html
+Example code for this post https://blog.mikeauclair.com/blog/2018/12/04/fractional-source-of-truth-log-pt3.html
 
 Relevant files (in this directory)
 ```
