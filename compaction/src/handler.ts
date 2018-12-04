@@ -214,8 +214,9 @@ const compactionKeyForEvent = (event: event): string => {
   let eventType = event[EventIndex.EventCommand];
   switch (eventType) {
     case "setGroupLimit":
-    case "setGroup":
       return eventType + event[EventIndex.Target];
+    case "setGroup":
+      return "";
     case "setVehicleGroupAssignment":
       return eventType + event[EventIndex.Value];
     case "setExclusion":
@@ -233,6 +234,9 @@ const compactionKeyForEvent = (event: event): string => {
 export const compactLog = (events: event[]): event[] => {
   let seen = new Set();
   let results = events.reduceRight((accum, event) => {
+    if (event[EventIndex.EventCommand] == "setGroup") {
+      return Arrays.unshift(accum, event);
+    }
     if (event[EventIndex.EventCommand] == "noop") {
       return accum;
     }
